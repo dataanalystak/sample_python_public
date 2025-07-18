@@ -1,75 +1,90 @@
 import streamlit as st
 import matplotlib.pyplot as plt
 
-# Set page config
-st.set_page_config(page_title="Home Loan EMI Calculator", page_icon="🏠", layout="centered")
+# --- Page Config ---
+st.set_page_config(page_title="Home Loan Calculator 💰", page_icon="💵", layout="centered")
 
-# --- Custom CSS ---
+# --- Dark Blue Theme with Watermark ---
 st.markdown("""
     <style>
-        .main {
-            background-color: #f0f9ff;
+        .stApp {
+            background-color: #001f3f;
+            background-image: url('https://upload.wikimedia.org/wikipedia/commons/6/6b/Dollar_sign_green.svg');
+            background-repeat: no-repeat;
+            background-position: center;
+            background-size: 250px;
+            opacity: 0.98;
         }
+
+        h1, h2, h3, h4, h5, h6, p, label, div, span {
+            color: #ffffff !important;
+        }
+
+        .stNumberInput>div>div>input {
+            background-color: #003366;
+            color: #ffffff;
+            border: 1px solid #0099ff;
+        }
+
         .stButton>button {
-            background-color: #4CAF50;
+            background-color: #0099ff;
             color: white;
             font-size: 16px;
-            border-radius: 8px;
-            height: 3em;
-            width: 100%;
+            border-radius: 10px;
+            padding: 10px 20px;
+            border: none;
         }
-        .stNumberInput>div>div>input {
-            font-size: 18px;
-            color: #003366;
+
+        .css-1kyxreq {
+            background-color: transparent !important;
         }
     </style>
 """, unsafe_allow_html=True)
 
 # --- Title ---
-st.markdown("<h1 style='color: #2E8B57;'>🏡 Home Loan EMI Calculator</h1>", unsafe_allow_html=True)
-st.markdown("Estimate your monthly payments for a home loan using the inputs below.")
+st.markdown("<h1 style='text-align:center;'>💵 Home Loan EMI Calculator</h1>", unsafe_allow_html=True)
+st.write("Use this tool to calculate your monthly mortgage payments.")
 
 # --- Inputs ---
 st.subheader("🔢 Loan Details")
-loan_amount = st.number_input("🏦 Loan Amount (₹)", min_value=0.0, value=500000.0, step=10000.0, format="%.2f")
-interest_rate = st.number_input("📈 Annual Interest Rate (%)", min_value=0.0, value=8.5, step=0.1, format="%.2f")
-loan_tenure_years = st.number_input("📅 Loan Tenure (Years)", min_value=1, value=20, step=1)
+loan_amount = st.number_input("🏦 Loan Amount ($)", min_value=0.0, value=250000.0, step=5000.0, format="%.2f")
+interest_rate = st.number_input("📈 Interest Rate (% per year)", min_value=0.0, value=6.5, step=0.1, format="%.2f")
+loan_tenure = st.number_input("📅 Loan Tenure (Years)", min_value=1, value=30, step=1)
 
-# --- EMI Calculation Function ---
+# --- EMI Calculation ---
 def calculate_emi(P, R, N):
     monthly_rate = R / (12 * 100)
     num_payments = N * 12
     if monthly_rate == 0:
         return P / num_payments
-    emi = P * monthly_rate * ((1 + monthly_rate) ** num_payments) / (((1 + monthly_rate) ** num_payments) - 1)
+    emi = P * monthly_rate * ((1 + monthly_rate)**num_payments) / ((1 + monthly_rate)**num_payments - 1)
     return emi
 
-# --- Calculate & Display ---
+# --- Button ---
 if st.button("💰 Calculate EMI"):
-    emi = calculate_emi(loan_amount, interest_rate, loan_tenure_years)
-    total_payment = emi * loan_tenure_years * 12
+    emi = calculate_emi(loan_amount, interest_rate, loan_tenure)
+    total_payment = emi * loan_tenure * 12
     total_interest = total_payment - loan_amount
 
-    # Display Results
     st.success("✅ Calculation Complete!")
+
     st.markdown(f"""
         ### 📊 Loan Summary
-        - **Monthly EMI:** ₹{emi:,.2f}
-        - **Total Payment:** ₹{total_payment:,.2f}
-        - **Total Interest:** ₹{total_interest:,.2f}
+        - **Monthly EMI:** ${emi:,.2f}
+        - **Total Payment:** ${total_payment:,.2f}
+        - **Total Interest:** ${total_interest:,.2f}
     """)
 
     # --- Pie Chart ---
     fig, ax = plt.subplots()
-    labels = 'Principal Amount', 'Total Interest'
-    sizes = [loan_amount, total_interest]
-    colors = ['#4CAF50', '#FF6F61']
+    labels = ['Principal', 'Interest']
+    values = [loan_amount, total_interest]
+    colors = ['#0074D9', '#39CCCC']
     explode = (0, 0.1)
-
-    ax.pie(sizes, labels=labels, autopct='%1.1f%%', startangle=90,
-           colors=colors, explode=explode, shadow=True)
-    ax.axis('equal')  # Equal aspect ratio ensures that pie is drawn as a circle.
-
+    ax.pie(values, labels=labels, autopct='%1.1f%%', colors=colors, startangle=90, explode=explode, shadow=True)
+    ax.axis('equal')
     st.pyplot(fig)
 
-    st.info("Tip: You can reduce your EMI by increasing the tenure or reducing the interest rate.")
+
+#info line
+    st.info("💡 Tip: Lower interest or longer tenure can reduce your monthly EMI.")
